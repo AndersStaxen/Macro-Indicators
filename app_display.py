@@ -27,7 +27,6 @@ def get_excel_download_link(file_path):
         href = f'<a href="data:application/octet-stream;base64,{b64}" download="Economic_Indicators.xlsx">Download Excel File</a>'
         return href
 st.markdown(get_excel_download_link('Economic_Indicators.xlsx'), unsafe_allow_html=True)
-st.markdown("---")
 
 # --- Code Snippets / Python Link ---
 import base64
@@ -37,8 +36,8 @@ def get_python_download_link(file_path):
         b64 = base64.b64encode(f.read()).decode()
         href = f'<a href="data:application/octet-stream;base64,{b64}" download="Data_Visualization.py">Download Data Visualization.py</a>'
         return href
-
 st.markdown(get_python_download_link('Data_Visualization.py'), unsafe_allow_html=True)
+st.markdown("---")
 
 
 # --- Load Excel ---
@@ -54,10 +53,9 @@ data_dict = load_data()
 st.subheader("All Macroeconomic Variables")
 
 # Assuming data_dict is already defined with keys like "All Data", "Monthly", etc.
-sheet_names = list(data_dict.keys())
+sheet_name = st.selectbox("Choose a frequency", list(data_dict.keys()))
 default_index = sheet_names.index("Monthly") if "Monthly" in sheet_names else 0
-
-sheet_name = st.selectbox("Choose a frequency", sheet_names, index=default_index)
+st.dataframe(data_dict[sheet_name], use_container_width=True)
 
 
 # --- Code Snippets ---
