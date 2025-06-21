@@ -17,13 +17,16 @@ He holds a bachelor’s degree in finance and political science, with previous e
 )
 st.sidebar.markdown("[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/andersstaxen/)")
 
-st.markdown("---") # Separator
-("""
-Related Research:
+st.sidebar.markdown("---") # Separator
+st.sudebar.subheader("Related Research")
+
+st.sidebar.markdown(
+    """
 Sovereign 10-Year Yield Predictor; Using 2010-2019 panel data with country fixed effects, I investigated the institutional and macroeconomic determinants of countries' 10-year yield.
 Key findings show that Real GDP Growth (coefficient: -0.2426) and Inflation (coefficient: 0.1932) are statistically significant predictors of sovereign yields.
 The model also incorporates year fixed effects which capture broader market conditions and global economic trends over the period studied.
-""")
+    """
+)
 
 st.sidebar.markdown("[Explore Claude Artifact](https://claude.ai/public/artifacts/7ed39c45-a853-4338-92c9-f8eb933cf8f8)")
 
