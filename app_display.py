@@ -317,9 +317,6 @@ if selected_plot_variables:
             if not valid_columns_for_plotting:
                 st.info("No selected variables have valid numeric data points to plot in the chosen frequency.")
                 # This 'return' might be too aggressive if you want to show an empty plot.
-                # Remove 'return' if you prefer an empty chart when no valid data is found.
-                return
-
 
             # Filter df_for_chart to only include columns with valid data
             df_for_chart = df_for_chart[valid_columns_for_plotting]
