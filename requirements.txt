@@ -7,3 +7,5 @@ seaborn
 openpyxl
 statsmodels
 scikit-learn
+streamlit
+plotly
