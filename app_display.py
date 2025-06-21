@@ -185,7 +185,7 @@ with st.expander("Click to see the full list of variables"):
 
 # --- Time Series Visualization ---
 
-# app.py (Replace your existing "Interactive Time Series Visualizations" section with this)
+# app.py (Modify your existing "Interactive Time Series Visualizations" section with this)
 
 st.subheader("Interactive Time Series Visualizations")
 
@@ -195,29 +195,30 @@ available_plot_variables = list(indicators.keys()) + derived_indicators
 selected_plot_variables = st.multiselect(
     "Select variables to visualize",
     options=available_plot_variables,
-    default=[] # Start with no defaults, or choose some relevant ones
+    default=[] # Keep it empty or add some relevant defaults
 )
 
 if selected_plot_variables:
-    plot_frequency_sheet = "Monthly"
+    # --- IMPORTANT CHANGE HERE: Use the "All Data" sheet ---
+    plot_data_sheet = "All Data"
 
-    if plot_frequency_sheet in data_dict:
-        df_plot = data_dict[plot_frequency_sheet].copy()
+    if plot_data_sheet in data_dict:
+        df_plot = data_dict[plot_data_sheet].copy()
+
+        # Ensure 'Date' column is present and is a datetime object, then set as index
+        if 'Date' in df_plot.columns:
+            df_plot['Date'] = pd.to_datetime(df_plot['Date'], errors='coerce') # coerce errors to turn invalid dates into NaT
+            df_plot = df_plot.set_index('Date').sort_index() # Sort by date for proper time series
+        else:
+            st.error(f"'{plot_data_sheet}' sheet does not contain a 'Date' column. Cannot plot.")
+            st.stop()
 
         # --- Debugging Tip 1: Print all actual columns in the DataFrame ---
-        st.info(f"Columns found in '{plot_frequency_sheet}' sheet: {df_plot.columns.tolist()}")
-
-        if 'Date' in df_plot.columns:
-            df_plot['Date'] = pd.to_datetime(df_plot['Date'])
-            df_plot = df_plot.set_index('Date')
-        else:
-            st.error(f"'{plot_frequency_sheet}' sheet does not contain a 'Date' column. Cannot plot.")
-            st.stop()
+        # st.info(f"Columns found in '{plot_data_sheet}' sheet: {df_plot.columns.tolist()}")
 
         columns_to_plot = []
         display_names = {}
-
-        actual_df_columns_lower = [col.lower().strip() for col in df_plot.columns] # For robust matching
+        actual_df_columns_lower = [col.lower().strip() for col in df_plot.columns]
 
         for var_name in selected_plot_variables:
             found_column = None
@@ -226,16 +227,13 @@ if selected_plot_variables:
             # 1. Try to match by FRED Code (for primary indicators)
             if var_name in indicators:
                 fred_code = indicators[var_name]['code']
-                
-                # Check for FRED code directly
+
                 if fred_code in df_plot.columns:
                     found_column = fred_code
                     display_for_plot = var_name
-                # Check for descriptive name if FRED code isn't found
-                elif var_name in df_plot.columns: # Check if the descriptive name is directly a column
+                elif var_name in df_plot.columns:
                     found_column = var_name
                     display_for_plot = var_name
-                # Fallback: check case-insensitive and stripped versions
                 else:
                     try_fred_code_lower = fred_code.lower().strip()
                     try_var_name_lower = var_name.lower().strip()
@@ -248,37 +246,36 @@ if selected_plot_variables:
                         display_for_plot = var_name
 
             # 2. Try to match by the variable name itself (for derived indicators or if primary indicators are named directly)
-            elif var_name in df_plot.columns: # Direct match for derived or other names
+            elif var_name in df_plot.columns:
                 found_column = var_name
                 display_for_plot = var_name
-            # Fallback: check case-insensitive and stripped versions for derived
-            else:
+            else: # Fallback for derived variables, check case-insensitive and stripped
                 try_var_name_lower = var_name.lower().strip()
                 if try_var_name_lower in actual_df_columns_lower:
                     found_column = df_plot.columns[actual_df_columns_lower.index(try_var_name_lower)]
                     display_for_plot = var_name
 
-
             if found_column:
                 columns_to_plot.append(found_column)
                 display_names[found_column] = display_for_plot
             else:
-                st.warning(f"Data for '{var_name}' not found in the '{plot_frequency_sheet}' sheet with its FRED code or descriptive name. Please check the exact column name in your Excel file.")
+                st.warning(f"Data for '{var_name}' not found in the '{plot_data_sheet}' sheet. Please ensure the column name is correct in your Excel file.")
 
         # --- Debugging Tip 2: Print the columns that were actually identified for plotting ---
-        st.info(f"Identified columns for plotting: {columns_to_plot}")
-        st.info(f"Display name mapping: {display_names}")
+        # st.info(f"Identified columns for plotting: {columns_to_plot}")
+        # st.info(f"Display name mapping: {display_names}")
 
 
         if columns_to_plot:
             import plotly.express as px
 
+            # Select and rename columns, then ensure numeric type
             df_for_chart = df_plot[columns_to_plot].rename(columns=display_names)
             df_for_chart = df_for_chart.apply(pd.to_numeric, errors='coerce')
 
             fig = px.line(df_for_chart,
                           x=df_for_chart.index,
-                          y=df_for_chart.columns,
+                          y=df_for_chart.columns, # Use renamed columns for y-axis
                           title='Selected Macroeconomic Indicators Over Time',
                           labels={'value': 'Value', 'index': 'Date'})
 
@@ -300,6 +297,6 @@ if selected_plot_variables:
         else:
             st.info("No valid variables selected or found in the data for plotting.")
     else:
-        st.info(f"The '{plot_frequency_sheet}' sheet was not found in your Excel file. Please ensure it exists for time series plotting.")
+        st.error(f"The '{plot_data_sheet}' sheet was not found in your Excel file. Please ensure it exists and contains all variables for plotting.")
 else:
     st.info("Select variables from the dropdown above to see their time series.")
