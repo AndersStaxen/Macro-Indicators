@@ -139,14 +139,14 @@ indicators = {
 
 # --- Additional derived indicators ---
 derived_indicators = [
-    'CPI MoM % Change',
-    'CPI YoY % Change',
-    'Core CPI MoM % Change',
-    'Core CPI YoY % Change',
-    'PCE MoM % Change',
-    'PCE YoY % Change',
-    'Core PCE MoM % Change',
-    'Core PCE YoY % Change'
+    'CPI MoM %',
+    'CPI YoY %',
+    'Core CPI MoM %',
+    'Core CPI YoY %',
+    'PCE MoM %',
+    'PCE YoY %',
+    'Core PCE MoM %',
+    'Core PCE YoY %'
 ]
 
 
