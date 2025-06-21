@@ -20,12 +20,17 @@ Additionally, links to download the full dataset in Excel format and view more c
 - 🧰 Reusable Python analysis methods
 """)
 
-# --- Code Snippets / Colab Link ---
-st.subheader("Analyze Data using Python in Google Colab")
-st.markdown(
-    '[🔗 Open Python Analysis in Google Colab](https://colab.research.google.com/drive/1oDDixxqdWI46aHwc5Toz9lHwZX7482_s?usp=sharing)',
-    unsafe_allow_html=True
-)
+# --- Code Snippets / Python Link ---
+import base64
+
+def get_python_download_link(file_path):
+    with open(file_path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+        href = f'<a href="data:application/octet-stream;base64,{b64}" download="Data_Visualization.py">Download Data_Visualization.py</a>'
+        return href
+
+st.markdown(get_python_download_link('Data_Visualization.py'), unsafe_allow_html=True)
+
 
 # --- Load Excel ---
 @st.cache_data
@@ -38,6 +43,14 @@ data_dict = load_data()
 
 # --- Table View ---
 st.subheader("All Macroeconomic Variables")
+
+# Assuming data_dict is already defined with keys like "All Data", "Monthly", etc.
+sheet_names = list(data_dict.keys())
+default_index = sheet_names.index("Monthly") if "Monthly" in sheet_names else 0
+
+sheet_name = st.selectbox("Choose a frequency", sheet_names, index=default_index)
+
+
 # --- Download Excel ---
 def get_excel_download_link(file_path):
     with open(file_path, "rb") as f:
@@ -46,13 +59,6 @@ def get_excel_download_link(file_path):
         return href
 st.markdown(get_excel_download_link('Economic_Indicators.xlsx'), unsafe_allow_html=True)
 st.markdown("---")
-
-# Assuming data_dict is already defined with keys like "All Data", "Monthly", etc.
-sheet_names = list(data_dict.keys())
-default_index = sheet_names.index("Monthly") if "Monthly" in sheet_names else 0
-
-sheet_name = st.selectbox("Choose a frequency", sheet_names, index=default_index)
-
 
 # --- Code Snippets ---
 st.subheader("💡 Sample Python Code for Analysis")
