@@ -185,9 +185,42 @@ with st.expander("Click to see the full list of variables"):
 
 # --- Time Series Visualization ---
 
-# app.py (Modify your existing "Interactive Time Series Visualizations" section with this)
+# app.py (Modify your "Interactive Time Series Visualizations" section with this)
 
 st.subheader("Interactive Time Series Visualizations")
+
+# NEW: Selectbox for choosing the data frequency for the plot
+# You can customize these options based on which sheets you want to allow for plotting.
+# It's good to include "All Data" as an option too, as it covers everything.
+plot_frequency_options = ["All Data", "Monthly", "Quarterly", "Daily", "Weekly"] # Order as desired
+
+# Filter to only include sheets that actually exist in your data_dict
+existing_plot_frequencies = [
+    freq for freq in plot_frequency_options if freq in data_dict
+]
+
+if not existing_plot_frequencies:
+    st.error("No data sheets available for time series visualization. Please ensure your Excel file is loaded correctly.")
+    st.stop() # Stop execution if no data is found for plotting
+
+# Set a default selection for the plot frequency
+default_plot_freq_index = 0
+if "Monthly" in existing_plot_frequencies:
+    default_plot_freq_index = existing_plot_frequencies.index("Monthly")
+elif "All Data" in existing_plot_frequencies: # Fallback to All Data if Monthly isn't there
+    default_plot_freq_index = existing_plot_frequencies.index("All Data")
+
+
+selected_plot_frequency = st.selectbox(
+    "Select data frequency for visualization:",
+    options=existing_plot_frequencies,
+    index=default_plot_freq_index,
+    key="plot_freq_selector"
+)
+
+# Assign the selected frequency to the sheet variable used in plotting
+plot_data_sheet = selected_plot_frequency
+
 
 # Get a list of all variable names for selection
 available_plot_variables = list(indicators.keys()) + derived_indicators
@@ -195,20 +228,18 @@ available_plot_variables = list(indicators.keys()) + derived_indicators
 selected_plot_variables = st.multiselect(
     "Select variables to visualize",
     options=available_plot_variables,
-    default=[] # Keep it empty or add some relevant defaults
+    default=[], # Keep it empty or add some relevant defaults
+    key="variable_selector"
 )
 
 if selected_plot_variables:
-    # --- IMPORTANT CHANGE HERE: Use the "All Data" sheet ---
-    plot_data_sheet = "All Data"
-
     if plot_data_sheet in data_dict:
         df_plot = data_dict[plot_data_sheet].copy()
 
         # Ensure 'Date' column is present and is a datetime object, then set as index
         if 'Date' in df_plot.columns:
-            df_plot['Date'] = pd.to_datetime(df_plot['Date'], errors='coerce') # coerce errors to turn invalid dates into NaT
-            df_plot = df_plot.set_index('Date').sort_index() # Sort by date for proper time series
+            df_plot['Date'] = pd.to_datetime(df_plot['Date'], errors='coerce')
+            df_plot = df_plot.set_index('Date').sort_index()
         else:
             st.error(f"'{plot_data_sheet}' sheet does not contain a 'Date' column. Cannot plot.")
             st.stop()
@@ -259,7 +290,7 @@ if selected_plot_variables:
                 columns_to_plot.append(found_column)
                 display_names[found_column] = display_for_plot
             else:
-                st.warning(f"Data for '{var_name}' not found in the '{plot_data_sheet}' sheet. Please ensure the column name is correct in your Excel file.")
+                st.warning(f"Data for '{var_name}' not found in the '{plot_data_sheet}' sheet. Please ensure the column name is correct in your Excel file for this frequency.")
 
         # --- Debugging Tip 2: Print the columns that were actually identified for plotting ---
         # st.info(f"Identified columns for plotting: {columns_to_plot}")
@@ -269,14 +300,35 @@ if selected_plot_variables:
         if columns_to_plot:
             import plotly.express as px
 
-            # Select and rename columns, then ensure numeric type
+            # Select and rename columns
             df_for_chart = df_plot[columns_to_plot].rename(columns=display_names)
+
+            # Ensure numeric type, converting non-numeric to NaN
             df_for_chart = df_for_chart.apply(pd.to_numeric, errors='coerce')
+
+            # Check for columns that are entirely NaN after conversion
+            valid_columns_for_plotting = []
+            for col_name in df_for_chart.columns:
+                if df_for_chart[col_name].dropna().empty:
+                    st.warning(f"'{col_name}' has no valid numeric data points in the '{plot_data_sheet}' sheet and will not be plotted.")
+                else:
+                    valid_columns_for_plotting.append(col_name)
+
+            if not valid_columns_for_plotting:
+                st.info("No selected variables have valid numeric data points to plot in the chosen frequency.")
+                # This 'return' might be too aggressive if you want to show an empty plot.
+                # Remove 'return' if you prefer an empty chart when no valid data is found.
+                return
+
+
+            # Filter df_for_chart to only include columns with valid data
+            df_for_chart = df_for_chart[valid_columns_for_plotting]
+
 
             fig = px.line(df_for_chart,
                           x=df_for_chart.index,
-                          y=df_for_chart.columns, # Use renamed columns for y-axis
-                          title='Selected Macroeconomic Indicators Over Time',
+                          y=df_for_chart.columns,
+                          title=f'Selected Macroeconomic Indicators ({plot_data_sheet} Data) Over Time',
                           labels={'value': 'Value', 'index': 'Date'})
 
             fig.update_xaxes(
@@ -297,6 +349,6 @@ if selected_plot_variables:
         else:
             st.info("No valid variables selected or found in the data for plotting.")
     else:
-        st.error(f"The '{plot_data_sheet}' sheet was not found in your Excel file. Please ensure it exists and contains all variables for plotting.")
+        st.error(f"The selected sheet '{plot_data_sheet}' was not found in your Excel file. Please select an existing sheet.")
 else:
-    st.info("Select variables from the dropdown above to see their time series.")
+    st.info("Select data frequency and variables from the dropdowns above to see their time series.")
