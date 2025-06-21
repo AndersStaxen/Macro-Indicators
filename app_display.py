@@ -17,9 +17,14 @@ He holds a bachelor’s degree in finance and political science, with previous e
 )
 st.sidebar.markdown("[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/andersstaxen/)")
 
-# Or, a simpler text link:
-# st.sidebar.markdown("[My LinkedIn Profile](YOUR_LINKEDIN_URL_HERE)")
-# st.sidebar.markdown("[My GitHub Profile](YOUR_GITHUB_URL_HERE)")
+st.markdown("---") # Separator
+"""
+Related Research:
+Sovereign 10-Year Yield Predictor; Using 2010-2019 panel data with country fixed effects, I investigated the institutional and macroeconomic determinants of countries' 10-year yield.
+Key findings show that Real GDP Growth (coefficient: -0.2426) and Inflation (coefficient: 0.1932) are statistically significant predictors of sovereign yields.
+The model also incorporates year fixed effects which capture broader market conditions and global economic trends over the period studied.
+
+st.sidebar.markdown("[Explore Claude Artifact](https://claude.ai/public/artifacts/7ed39c45-a853-4338-92c9-f8eb933cf8f8)")
 
 
 # --- Page Config ---
@@ -28,7 +33,8 @@ st.set_page_config(page_title="U.S. Macroeconomic Dashboard", layout="wide")
 # --- Title & Description ---
 st.title("U.S. Macroeconomic Indicators")
 st.markdown("""
-This dashboard presents key U.S. macroeconomic indicators using data sourced from the Federal Reserve (FRED).
+This dashboard presents 49 key U.S. macroeconomic indicators using data sourced from the Federal Reserve (FRED).
+Currently, the data displayed covers the period from January 1, 2017, to December 31, 2024; however, this time period can be customized when running the Python script locally.
 The project aims to centralize critical time-series data for economic analysis.
 Additionally, links to download the full dataset in Excel format and view more comprehensive ways of using Python to analyze the data are provided.
 """)
