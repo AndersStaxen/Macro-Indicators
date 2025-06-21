@@ -166,6 +166,24 @@ if data_dict: # Only show this if data was loaded successfully
     st.dataframe(data_dict[sheet_name], use_container_width=True)
 
 
+# --- Show List of Variables (New Section) ---
+st.subheader("Available Macroeconomic Variables")
+
+with st.expander("Click to see the full list of variables"):
+    # Prepare data for DataFrame
+    variable_list_data = []
+    for name, details in indicators.items():
+        variable_list_data.append({"Variable Name": name, "FRED Code": details['code'], "Frequency": details['frequency'].capitalize()})
+
+    # Add derived indicators
+    for name in derived_indicators:
+        variable_list_data.append({"Variable Name": name, "FRED Code": "N/A (Derived)", "Frequency": "Calculated"})
+
+    df_variables = pd.DataFrame(variable_list_data)
+    st.dataframe(df_variables, use_container_width=True, hide_index=True)
+
+
+
 # Assuming data_dict is loaded and contains your dataframes by frequency
 # and indicators dictionary is available
 
@@ -226,18 +244,4 @@ else:
     st.info("Select variables from the dropdown above to see their time series.")
 
 
-# --- Show List of Variables (New Section) ---
-st.subheader("Available Macroeconomic Variables")
 
-with st.expander("Click to see the full list of variables"):
-    # Prepare data for DataFrame
-    variable_list_data = []
-    for name, details in indicators.items():
-        variable_list_data.append({"Variable Name": name, "FRED Code": details['code'], "Frequency": details['frequency'].capitalize()})
-
-    # Add derived indicators
-    for name in derived_indicators:
-        variable_list_data.append({"Variable Name": name, "FRED Code": "N/A (Derived)", "Frequency": "Calculated"})
-
-    df_variables = pd.DataFrame(variable_list_data)
-    st.dataframe(df_variables, use_container_width=True, hide_index=True)
