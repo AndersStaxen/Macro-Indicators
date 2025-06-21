@@ -18,7 +18,7 @@ He holds a bachelor’s degree in finance and political science, with previous e
 st.sidebar.markdown("[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/andersstaxen/)")
 
 st.sidebar.markdown("---") # Separator
-st.sudebar.subheader("Related Research")
+st.sidebar.subheader("Related Research")
 
 st.sidebar.markdown(
     """
