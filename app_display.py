@@ -23,7 +23,7 @@ def get_excel_download_link(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
         # Adjusted text for the link to be more concise since the explanation is separate
-        href = f'<a href="data:application/octet-stream;base64,{b64}" download="Economic_Indicators.xlsx">Download</a>'
+        href = f'<a href="data:application/octet-stream;base64,{b64}" download="Economic_Indicators.xlsx">Download Excel File</a>'
         return href
 
 # --- Download Python File Function ---
@@ -31,7 +31,7 @@ def get_python_download_link(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
         # Adjusted text for the link
-        href = f'<a href="data:application/octet-stream;base64,{b64}" download="Data_Visualization.py">Download</a>'
+        href = f'<a href="data:application/octet-stream;base64,{b64}" download="Data_Visualization.py">Download Python Data Analysis Script</a>'
         return href
 
 # Feature 1: Table View (already present, just adding bullet point)
