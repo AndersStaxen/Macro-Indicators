@@ -4,6 +4,24 @@ import streamlit as st
 import pandas as pd
 import base64
 
+# app.py (add this snippet)
+
+# --- About Me / Contact (in sidebar) ---
+st.sidebar.subheader("About the Author")
+st.sidebar.markdown(
+    """
+Anders Staxen is a graduate student at Columbia University, specializing in international finance and quantitative analysis.
+He holds a bachelor’s degree in finance and political science, with previous experience in wealth management and international political economy research.
+    Connect with me on LinkedIn
+    """
+)
+st.sidebar.markdown("[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/andersstaxen/)")
+
+# Or, a simpler text link:
+# st.sidebar.markdown("[My LinkedIn Profile](YOUR_LINKEDIN_URL_HERE)")
+# st.sidebar.markdown("[My GitHub Profile](YOUR_GITHUB_URL_HERE)")
+
+
 # --- Page Config ---
 st.set_page_config(page_title="U.S. Macroeconomic Dashboard", layout="wide")
 
