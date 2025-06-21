@@ -24,7 +24,6 @@ st.sidebar.markdown(
     """
 Sovereign 10-Year Yield Predictor; Using 2010-2019 panel data with country fixed effects, I investigated the institutional and macroeconomic determinants of countries' 10-year yield.
 Key findings show that Real GDP Growth (coefficient: -0.2426) and Inflation (coefficient: 0.1932) are statistically significant predictors of sovereign yields.
-The model also incorporates year fixed effects which capture broader market conditions and global economic trends over the period studied.
     """
 )
 
