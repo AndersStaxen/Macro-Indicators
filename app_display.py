@@ -54,7 +54,7 @@ st.subheader("All Macroeconomic Variables")
 
 # Assuming data_dict is already defined with keys like "All Data", "Monthly", etc.
 sheet_name = st.selectbox("Choose a frequency", list(data_dict.keys()))
-default_index = sheet_names.index("Monthly") if "Monthly" in sheet_names else 0
+default_index = sheet_name.index("Monthly") if "Monthly" in sheet_name else 0
 st.dataframe(data_dict[sheet_name], use_container_width=True)
 
 
