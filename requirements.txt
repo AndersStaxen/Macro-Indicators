@@ -1,0 +1,9 @@
+pandas
+numpy
+requests
+fredapi
+matplotlib
+seaborn
+openpyxl
+statsmodels
+scikit-learn
