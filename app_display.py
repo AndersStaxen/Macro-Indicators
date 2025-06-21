@@ -31,7 +31,7 @@ def get_python_download_link(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
         # Adjusted text for the link
-        href = f'<a href="data:application/octet-stream;base64,{b64}" download="Data_Visualization.py">Download Python Data Analysis Script</a>'
+        href = f'<a href="data:application/octet-stream;base64,{b64}" download="Data_Visualization.py">Download Python Analysis Script</a>'
         return href
 
 # Feature 1: Table View (already present, just adding bullet point)
