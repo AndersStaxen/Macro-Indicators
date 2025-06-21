@@ -183,65 +183,95 @@ with st.expander("Click to see the full list of variables"):
     st.dataframe(df_variables, use_container_width=True, hide_index=True)
 
 
-
-# Assuming data_dict is loaded and contains your dataframes by frequency
-# and indicators dictionary is available
-
-# Add this section somewhere in your main app.py, perhaps after "All Macroeconomic Variables" table
+# --- Time Series Visualization ---
 
 st.subheader("Interactive Time Series Visualizations")
 
 # Get a list of all variable names for selection
-# You might want to filter this list based on data availability
-available_plot_variables = [name for name, details in indicators.items()] + derived_indicators
+# Combine keys from indicators and the derived_indicators list
+available_plot_variables = list(indicators.keys()) + derived_indicators
 
 selected_plot_variables = st.multiselect(
     "Select variables to visualize",
     options=available_plot_variables,
-    default=['Real GDP', 'CPI'] # Example defaults
+    default=[] # Start with no defaults, or choose some relevant ones
 )
 
 if selected_plot_variables:
     # Determine the most appropriate frequency for plotting.
-    # This is a simplification; a more robust solution might handle mixed frequencies.
-    # For now, let's assume we plot from the "Monthly" sheet if available, otherwise "All Data"
-    plot_frequency_sheet = "Monthly" if "Monthly" in data_dict else list(data_dict.keys())[0]
+    # It's best if you can ensure a consistent frequency for plotting,
+    # e.g., always plotting from "Monthly" data if available.
+    plot_frequency_sheet = "Monthly" # We explicitly aim for "Monthly" data for plots
 
     if plot_frequency_sheet in data_dict:
-        df_plot = data_dict[plot_frequency_sheet].set_index('Date') # Assuming a 'Date' column
+        df_plot = data_dict[plot_frequency_sheet].copy() # Work on a copy to avoid SettingWithCopyWarning
+        
+        # Ensure 'Date' column is a datetime object and set as index
+        if 'Date' in df_plot.columns:
+            df_plot['Date'] = pd.to_datetime(df_plot['Date'])
+            df_plot = df_plot.set_index('Date')
+        else:
+            st.error(f"'{plot_frequency_sheet}' sheet does not contain a 'Date' column.")
+            st.stop() # Stop execution if no date column
 
-        # Filter the DataFrame to only include selected columns.
-        # You'll need to map variable names back to FRED codes if your DF columns are codes.
-        # If your DF columns are already clean names, this is simpler.
-        # For simplicity, let's assume 'Real GDP' and 'CPI' are directly columns in your DF
         columns_to_plot = []
+        display_names = {} # To store display names for legend
+
         for var_name in selected_plot_variables:
-            # This mapping needs to be precise. If your DF columns are FRED codes,
-            # you'd need to find the FRED code from 'indicators' dict.
-            # If your DF columns are the full variable names, you can use them directly.
-            if var_name in df_plot.columns: # Check if the column exists
-                columns_to_plot.append(var_name)
-            elif var_name in indicators and indicators[var_name]['code'] in df_plot.columns:
-                columns_to_plot.append(indicators[var_name]['code'])
-            # Handle derived variables separately if their names aren't direct columns
-            # For now, this example assumes direct column names or FRED codes in DF.
+            # Check if it's a primary indicator
+            if var_name in indicators:
+                fred_code = indicators[var_name]['code']
+                if fred_code in df_plot.columns:
+                    columns_to_plot.append(fred_code)
+                    display_names[fred_code] = var_name # Map FRED code to user-friendly name
+                else:
+                    st.warning(f"Data for '{var_name}' (FRED Code: {fred_code}) not found in the '{plot_frequency_sheet}' sheet.")
+            # Check if it's a derived indicator (assuming these are directly column names if calculated)
+            elif var_name in derived_indicators:
+                # For derived indicators, assume the 'var_name' itself is the column name
+                if var_name in df_plot.columns:
+                    columns_to_plot.append(var_name)
+                    display_names[var_name] = var_name # Display name is the same
+                else:
+                    st.warning(f"Data for derived variable '{var_name}' not found in the '{plot_frequency_sheet}' sheet.")
+            else:
+                st.warning(f"Unknown variable selected: '{var_name}'")
+
 
         if columns_to_plot:
             import plotly.express as px
+
+            # Rename columns in the DataFrame for better legend readability in Plotly
+            df_for_chart = df_plot[columns_to_plot].rename(columns=display_names)
+            
             # Ensure the data is numeric for plotting
-            df_for_chart = df_plot[columns_to_plot].apply(pd.to_numeric, errors='coerce')
+            df_for_chart = df_for_chart.apply(pd.to_numeric, errors='coerce')
 
             fig = px.line(df_for_chart,
                           x=df_for_chart.index,
-                          y=columns_to_plot,
-                          title='Selected Macroeconomic Indicators Over Time')
+                          y=df_for_chart.columns, # Use renamed columns for y-axis
+                          title='Selected Macroeconomic Indicators Over Time',
+                          labels={'value': 'Value', 'index': 'Date'}) # Improve axis labels
+            
+            # Add range slider and selector buttons for date navigation
+            fig.update_xaxes(
+                rangeslider_visible=True,
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1, label="1m", step="month", stepmode="backward"),
+                        dict(count=6, label="6m", step="month", stepmode="backward"),
+                        dict(count=1, label="YTD", step="year", stepmode="todate"),
+                        dict(count=1, label="1y", step="year", stepmode="backward"),
+                        dict(step="all")
+                    ])
+                )
+            )
+            fig.update_layout(hovermode="x unified") # Nice hover effect
+
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.warning("Selected variables not found in the chosen data frequency.")
+            st.info("No valid variables selected or found in the data for plotting.")
     else:
-        st.info("No data available for plotting. Please ensure your Excel file contains a 'Monthly' sheet or adjust the data loading.")
+        st.info(f"The '{plot_frequency_sheet}' sheet was not found in your Excel file. Please ensure it exists for time series plotting.")
 else:
     st.info("Select variables from the dropdown above to see their time series.")
-
-
-
