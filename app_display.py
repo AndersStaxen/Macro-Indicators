@@ -166,6 +166,66 @@ if data_dict: # Only show this if data was loaded successfully
     st.dataframe(data_dict[sheet_name], use_container_width=True)
 
 
+# Assuming data_dict is loaded and contains your dataframes by frequency
+# and indicators dictionary is available
+
+# Add this section somewhere in your main app.py, perhaps after "All Macroeconomic Variables" table
+
+st.subheader("Interactive Time Series Visualizations")
+
+# Get a list of all variable names for selection
+# You might want to filter this list based on data availability
+available_plot_variables = [name for name, details in indicators.items()] + derived_indicators
+
+selected_plot_variables = st.multiselect(
+    "Select variables to visualize",
+    options=available_plot_variables,
+    default=['Real GDP', 'CPI'] # Example defaults
+)
+
+if selected_plot_variables:
+    # Determine the most appropriate frequency for plotting.
+    # This is a simplification; a more robust solution might handle mixed frequencies.
+    # For now, let's assume we plot from the "Monthly" sheet if available, otherwise "All Data"
+    plot_frequency_sheet = "Monthly" if "Monthly" in data_dict else list(data_dict.keys())[0]
+
+    if plot_frequency_sheet in data_dict:
+        df_plot = data_dict[plot_frequency_sheet].set_index('Date') # Assuming a 'Date' column
+
+        # Filter the DataFrame to only include selected columns.
+        # You'll need to map variable names back to FRED codes if your DF columns are codes.
+        # If your DF columns are already clean names, this is simpler.
+        # For simplicity, let's assume 'Real GDP' and 'CPI' are directly columns in your DF
+        columns_to_plot = []
+        for var_name in selected_plot_variables:
+            # This mapping needs to be precise. If your DF columns are FRED codes,
+            # you'd need to find the FRED code from 'indicators' dict.
+            # If your DF columns are the full variable names, you can use them directly.
+            if var_name in df_plot.columns: # Check if the column exists
+                columns_to_plot.append(var_name)
+            elif var_name in indicators and indicators[var_name]['code'] in df_plot.columns:
+                columns_to_plot.append(indicators[var_name]['code'])
+            # Handle derived variables separately if their names aren't direct columns
+            # For now, this example assumes direct column names or FRED codes in DF.
+
+        if columns_to_plot:
+            import plotly.express as px
+            # Ensure the data is numeric for plotting
+            df_for_chart = df_plot[columns_to_plot].apply(pd.to_numeric, errors='coerce')
+
+            fig = px.line(df_for_chart,
+                          x=df_for_chart.index,
+                          y=columns_to_plot,
+                          title='Selected Macroeconomic Indicators Over Time')
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.warning("Selected variables not found in the chosen data frequency.")
+    else:
+        st.info("No data available for plotting. Please ensure your Excel file contains a 'Monthly' sheet or adjust the data loading.")
+else:
+    st.info("Select variables from the dropdown above to see their time series.")
+
+
 # --- Show List of Variables (New Section) ---
 st.subheader("Available Macroeconomic Variables")
 
