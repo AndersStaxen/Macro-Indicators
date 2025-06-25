@@ -261,8 +261,8 @@ selected_plot_variables = st.multiselect(
 if selected_plot_frequency in data_dict:
     df_plot = data_dict[selected_plot_frequency].copy()
 
-         # FIX BLOCK: Map frequency selection to downstream sheet variable
-        plot_data_sheet = selected_plot_frequency
+    # FIX BLOCK: Map frequency selection to downstream sheet variable
+    plot_data_sheet = selected_plot_frequency
 
         # Safety check: Is the sheet present?
         if plot_data_sheet not in xls.sheet_names:
