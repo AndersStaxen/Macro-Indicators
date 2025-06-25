@@ -261,6 +261,14 @@ selected_plot_variables = st.multiselect(
 if selected_plot_frequency in data_dict:
     df_plot = data_dict[selected_plot_frequency].copy()
 
+         # FIX BLOCK: Map frequency selection to downstream sheet variable
+        plot_data_sheet = selected_plot_frequency
+
+        # Safety check: Is the sheet present?
+        if plot_data_sheet not in xls.sheet_names:
+            st.error(f"The selected sheet '{plot_data_sheet}' was not found in your Excel file. Please select an existing sheet.")
+            st.stop()
+
     # Ensure 'Date' column is present and is a datetime object, then set as index
     if 'Date' in df_plot.columns:
         df_plot['Date'] = pd.to_datetime(df_plot['Date'], errors='coerce')
