@@ -62,7 +62,7 @@ def get_python_download_link(file_path):
         return href
 
 # --- Download Python Notebook Function ---
-def get_python_download_link(file_path):
+def get_python_notebook_download_link(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
         # Adjusted text for the link
@@ -91,7 +91,7 @@ col1_python, col2_python = st.columns([0.8, 0.2]) # Adjust ratios as needed
 with col1_python:
     st.markdown("- 📑 Reusable Python Notebook")
 with col2_python:
-    st.markdown(get_python_download_link('Economic_Indicators.py'), unsafe_allow_html=True)
+    st.markdown(get_python_notebook_download_link('Economic_Indicators.py'), unsafe_allow_html=True)
 
 st.markdown("---") # Separator
 
