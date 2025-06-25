@@ -65,7 +65,7 @@ def get_python_download_link(file_path):
 def get_python_notebook_download_link(file_path):
     with open(file_path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
-        href = f'<a href="data:application/octet-stream;base64,{b64}" download="Economic_Indicators.py">Download Entire Python Notebook Script</a>'
+        href = f'<a href="data:application/octet-stream;base64,{b64}" download="economic_indicators.py">Download Entire Python Notebook Script</a>'
         return href
 
 # Feature 1: Table View (already present, just adding bullet point)
@@ -90,7 +90,7 @@ col1_notebook, col2_notebook = st.columns([0.8, 0.2])
 with col1_notebook:
     st.markdown("- 📑 Entire Python Notebook")
 with col2_notebook:
-    st.markdown(get_python_notebook_download_link('Economic_Indicators.py'), unsafe_allow_html=True)
+    st.markdown(get_python_notebook_download_link('economic_indicators.py'), unsafe_allow_html=True)
 
 
 st.markdown("---") # Separator
