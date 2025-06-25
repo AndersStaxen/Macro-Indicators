@@ -243,6 +243,9 @@ selected_plot_frequency = st.selectbox(
     key="plot_freq_selector"
 )
 
+# ✅ NEW: Set the plotting sheet to match the selected frequency
+plot_data_sheet = selected_plot_frequency
+
 # --- Build available variable list for this frequency ---
 if selected_plot_frequency in indicators:
     available_plot_variables = list(indicators[selected_plot_frequency].keys()) + derived_indicators
