@@ -181,7 +181,7 @@ if data_dict: # Only show this if data was loaded successfully
     st.subheader("All Macroeconomic Variables")
     sheet_options = list(data_dict.keys())
     try:
-        default_index = sheet_options.index("Monthly")
+        default_index = sheet_options.index("monthly")
     except ValueError:
         default_index = 0
     sheet_name = st.selectbox(
