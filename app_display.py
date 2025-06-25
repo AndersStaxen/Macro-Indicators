@@ -225,32 +225,36 @@ available_variables = [
 if selected_frequency == 'monthly':
     available_variables += derived_indicators
 
-
 # --- User selects variable ---
 selected_indicators = st.multiselect("Select Variables", available_variables)
 
-# --- Plot ---
-import matplotlib.pyplot as plt
-plt.style.use('seaborn-v0_8-darkgrid')
+# --- Get the correct dataframe ---
+df = data_dict.get(selected_frequency)
 
-fig, ax = plt.subplots(figsize=(12, 6))
+if df is not None and not df.empty:
+    import matplotlib.pyplot as plt
+    plt.style.use('seaborn-v0_8-darkgrid')
 
-# Find the correct dataframe based on frequency
-df = data_dict[selected_frequency]
+    fig, ax = plt.subplots(figsize=(12, 6))
 
-# Check if the selected variable exists
-if selected_variable in df.columns:
-    df_plot = df[['Date', selected_variable]].dropna()
-    ax.plot(df_plot['Date'], df_plot[selected_variable], label=selected_variable)
+    found_any = False
+    for indicator in selected_indicators:
+        if indicator in df.columns:
+            df_plot = df[['Date', indicator]].dropna()
+            ax.plot(df_plot['Date'], df_plot[indicator], label=indicator)
+            found_any = True
+        else:
+            st.warning(f"'{indicator}' not found in {selected_frequency} data columns.")
 
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Value')
-    ax.set_title(f'Time Series of {selected_variable} ({selected_frequency} Data)')
-    ax.legend()
-    ax.grid(True)
+    if found_any:
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Value')
+        ax.set_title(f'Time Series of Selected Indicators ({selected_frequency} Data)')
+        ax.legend()
+        ax.grid(True)
 
-    st.pyplot(fig)
+        st.pyplot(fig)
+    else:
+        st.warning("No valid indicators selected for plotting.")
 else:
-    st.warning(f"{selected_variable} not found in the {selected_frequency} data.")
-
-
+    st.error(f"No data loaded for {selected_frequency}. Check your data loading function or Excel sheets.")
