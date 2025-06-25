@@ -231,3 +231,28 @@ selected_variable = st.selectbox("Select Variable", available_variables)
 # --- Error Handling ---
 if not available_variables:
     st.error("No indicators available for the selected frequency.")
+
+import matplotlib.pyplot as plt
+
+# --- Plot Selected Indicators ---
+if selected_indicators:
+    st.subheader("Indicator Trends Over Time")
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for indicator in selected_indicators:
+        # Check if the indicator exists in the data
+        for sheet_name, df in data_dict.items():
+            if indicator in df.columns:
+                df_plot = df[['Date', indicator]].dropna()
+                ax.plot(df_plot['Date'], df_plot[indicator], label=indicator)
+
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Value')
+    ax.set_title('Time Series of Selected Indicators')
+    ax.legend()
+    ax.grid(True)
+
+    st.pyplot(fig)
+else:
+    st.warning("No valid indicators selected for this frequency.")
+
