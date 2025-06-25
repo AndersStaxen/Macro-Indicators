@@ -374,6 +374,6 @@ if selected_plot_frequency in data_dict:
         else:
             st.info("No valid variables selected or found in the data for plotting.")
     else:
-        st.error(f"The selected sheet '{plot_data_sheet}' was not found in your Excel file. Please select an existing sheet.")
+    st.info("No valid variables selected or found for plotting in the chosen sheet.")
 else:
     st.info("Select data frequency and variables from the dropdowns above to see their time series.")
