@@ -213,168 +213,21 @@ with st.expander("Click to see the full list of variables"):
 
 st.subheader("Interactive Time Series Visualizations")
 
-# --- Selectbox for choosing the data frequency for the plot ---
-plot_frequency_options = ["All Data", "Daily", "Weekly", "Monthly", "Quarterly"]  # Order as desired
+# --- User-selected frequency ---
+selected_frequency = st.selectbox("Select Data Frequency", ['daily', 'weekly', 'monthly', 'quarterly'])
 
-# Filter to only include sheets that actually exist in your data_dict
-existing_plot_frequencies = [
-    freq for freq in plot_frequency_options if freq in data_dict
+# --- Filter indicators by selected frequency ---
+available_variables = [
+    name for name, meta in indicators.items() if meta['frequency'] == selected_frequency
 ]
 
-if not existing_plot_frequencies:
-    st.error("No data sheets available for time series visualization. Please ensure your Excel file is loaded correctly.")
-    st.stop()  # Stop execution if no data is found for plotting
+# --- Optional: Add derived indicators separately (if needed for certain frequencies) ---
+if selected_frequency == 'monthly':
+    available_variables += derived_indicators
 
-# Set a default selection for the plot frequency
-default_plot_freq_index = 0
-if "Monthly" in existing_plot_frequencies:
-    default_plot_freq_index = existing_plot_frequencies.index("Monthly")
-elif "All Data" in existing_plot_frequencies:
-    default_plot_freq_index = existing_plot_frequencies.index("All Data")
+# --- Streamlit Dropdown for variables ---
+selected_variable = st.selectbox("Select Variable", available_variables)
 
-# --- Exclude "All Data" from frequency options for plotting ---
-available_plot_frequencies = [freq for freq in existing_plot_frequencies if freq != 'All Data']
-
-# --- Frequency selection ---
-selected_plot_frequency = st.selectbox(
-    "Select data frequency for visualization:",
-    options=available_plot_frequencies,
-    index=default_plot_freq_index,
-    key="plot_freq_selector"
-)
-
-# ✅ NEW: Set the plotting sheet to match the selected frequency
-plot_data_sheet = selected_plot_frequency
-
-# --- Build available variable list for this frequency ---
-if selected_plot_frequency in indicators:
-    available_plot_variables = list(indicators[selected_plot_frequency].keys()) + derived_indicators
-else:
-    available_plot_variables = derived_indicators  # Fallback (shouldn't normally happen)
-
-# --- Variable Multi-Select ---
-selected_plot_variables = st.multiselect(
-    "Select variables to visualize",
-    options=available_plot_variables,
-    default=[],  # Empty default
-    key="variable_selector"
-)
-
-# --- Load DataFrame for selected frequency ---
-if selected_plot_frequency in data_dict:
-    df_plot = data_dict[selected_plot_frequency].copy()
-
-    # Ensure 'Date' column is present and is a datetime object, then set as index
-    if 'Date' in df_plot.columns:
-        df_plot['Date'] = pd.to_datetime(df_plot['Date'], errors='coerce')
-        df_plot = df_plot.set_index('Date').sort_index()
-    else:
-        st.error(f"'{plot_data_sheet}' sheet does not contain a 'Date' column. Cannot plot.")
-        st.stop()
-
-    # --- Debugging Tip 1: Print all actual columns in the DataFrame ---
-    # st.info(f"Columns found in '{plot_data_sheet}' sheet: {df_plot.columns.tolist()}")
-
-    columns_to_plot = []
-    display_names = {}
-    actual_df_columns_lower = [col.lower().strip() for col in df_plot.columns]
-
-    for var_name in selected_plot_variables:
-        found_column = None
-        display_for_plot = var_name
-
-        # 1. Try to match by FRED Code (for primary indicators)
-        if var_name in indicators:
-            fred_code = indicators[var_name]['code']
-
-            if fred_code in df_plot.columns:
-                found_column = fred_code
-                display_for_plot = var_name
-            elif var_name in df_plot.columns:
-                found_column = var_name
-                display_for_plot = var_name
-            else:
-                try_fred_code_lower = fred_code.lower().strip()
-                try_var_name_lower = var_name.lower().strip()
-
-                if try_fred_code_lower in actual_df_columns_lower:
-                    found_column = df_plot.columns[actual_df_columns_lower.index(try_fred_code_lower)]
-                    display_for_plot = var_name
-                elif try_var_name_lower in actual_df_columns_lower:
-                    found_column = df_plot.columns[actual_df_columns_lower.index(try_var_name_lower)]
-                    display_for_plot = var_name
-
-        # 2. Try to match by the variable name itself (for derived indicators or if primary indicators are named directly)
-        elif var_name in df_plot.columns:
-            found_column = var_name
-            display_for_plot = var_name
-        else: # Fallback for derived variables, check case-insensitive and stripped
-            try_var_name_lower = var_name.lower().strip()
-            if try_var_name_lower in actual_df_columns_lower:
-                found_column = df_plot.columns[actual_df_columns_lower.index(try_var_name_lower)]
-                display_for_plot = var_name
-
-        if found_column:
-            columns_to_plot.append(found_column)
-            display_names[found_column] = display_for_plot
-        else:
-            st.warning(f"Data for '{var_name}' not found in the '{plot_data_sheet}' sheet. Please ensure the column name is correct in your Excel file for this frequency.")
-
-    # --- Debugging Tip 2: Print the columns that were actually identified for plotting ---
-    # st.info(f"Identified columns for plotting: {columns_to_plot}")
-    # st.info(f"Display name mapping: {display_names}")
-
-
-    if columns_to_plot:
-        import plotly.express as px
-
-        # Select and rename columns
-        df_for_chart = df_plot[columns_to_plot].rename(columns=display_names)
-
-        # Ensure numeric type, converting non-numeric to NaN
-        df_for_chart = df_for_chart.apply(pd.to_numeric, errors='coerce')
-
-        # Check for columns that are entirely NaN after conversion
-        valid_columns_for_plotting = []
-        for col_name in df_for_chart.columns:
-            if df_for_chart[col_name].dropna().empty:
-                st.warning(f"'{col_name}' has no valid numeric data points in the '{plot_data_sheet}' sheet and will not be plotted.")
-            else:
-                valid_columns_for_plotting.append(col_name)
-
-        if not valid_columns_for_plotting:
-            st.info("No selected variables have valid numeric data points to plot in the chosen frequency.")
-            # This 'return' might be too aggressive if you want to show an empty plot.
-
-        # Filter df_for_chart to only include columns with valid data
-            df_for_chart = df_for_chart[valid_columns_for_plotting]
-
-
-            fig = px.line(df_for_chart,
-                        x=df_for_chart.index,
-                        y=df_for_chart.columns,
-                        title=f'Selected Macroeconomic Indicators ({plot_data_sheet} Data) Over Time',
-                        labels={'value': 'Value', 'index': 'Date'})
-
-            fig.update_xaxes(
-                rangeslider_visible=True,
-                rangeselector=dict(
-                    buttons=list([
-                        dict(count=1, label="1m", step="month", stepmode="backward"),
-                        dict(count=6, label="6m", step="month", stepmode="backward"),
-                        dict(count=1, label="YTD", step="year", stepmode="todate"),
-                        dict(count=1, label="1y", step="year", stepmode="backward"),
-                        dict(step="all")
-                    ])
-                )
-            )
-            fig.update_layout(hovermode="x unified")
-
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("No valid variables selected or found in the data for plotting.")
-    else:
-        st.info("No valid variables selected or found for plotting in the chosen sheet.")
-
-else:
-    st.info("Select data frequency and variables from the dropdowns above to see their time series.")
+# --- Error Handling ---
+if not available_variables:
+    st.error("No indicators available for the selected frequency.")
