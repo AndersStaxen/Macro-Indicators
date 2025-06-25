@@ -96,16 +96,18 @@ with col2_notebook:
 st.markdown("---") # Separator
 
 
-# --- Load Excel ---
+# --- Load Excel with lowercase sheet names ---
 @st.cache_data
 def load_data():
     try:
         file = 'Economic_Indicators.xlsx'
         xls = pd.ExcelFile(file)
-        return {sheet: xls.parse(sheet) for sheet in xls.sheet_names}
+        # Normalize sheet names to lowercase for consistency
+        return {sheet.lower(): xls.parse(sheet) for sheet in xls.sheet_names}
     except FileNotFoundError:
         st.warning("Economic_Indicators.xlsx not found. Please ensure the file is in the correct directory.")
-        return {} # Return an empty dict if file is not found
+        return {}
+ # Return an empty dict if file is not found
 
 data_dict = load_data()
 
