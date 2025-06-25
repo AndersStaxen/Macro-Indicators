@@ -344,33 +344,33 @@ if selected_plot_frequency in data_dict:
             # This 'return' might be too aggressive if you want to show an empty plot.
 
         # Filter df_for_chart to only include columns with valid data
-        df_for_chart = df_for_chart[valid_columns_for_plotting]
+            df_for_chart = df_for_chart[valid_columns_for_plotting]
 
 
-        fig = px.line(df_for_chart,
+            fig = px.line(df_for_chart,
                         x=df_for_chart.index,
                         y=df_for_chart.columns,
                         title=f'Selected Macroeconomic Indicators ({plot_data_sheet} Data) Over Time',
                         labels={'value': 'Value', 'index': 'Date'})
 
-        fig.update_xaxes(
-            rangeslider_visible=True,
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=1, label="1m", step="month", stepmode="backward"),
-                    dict(count=6, label="6m", step="month", stepmode="backward"),
-                    dict(count=1, label="YTD", step="year", stepmode="todate"),
-                    dict(count=1, label="1y", step="year", stepmode="backward"),
-                    dict(step="all")
-                ])
+            fig.update_xaxes(
+                rangeslider_visible=True,
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1, label="1m", step="month", stepmode="backward"),
+                        dict(count=6, label="6m", step="month", stepmode="backward"),
+                        dict(count=1, label="YTD", step="year", stepmode="todate"),
+                        dict(count=1, label="1y", step="year", stepmode="backward"),
+                        dict(step="all")
+                    ])
+                )
             )
-        )
-        fig.update_layout(hovermode="x unified")
+            fig.update_layout(hovermode="x unified")
 
-        st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No valid variables selected or found in the data for plotting.")
     else:
-        st.info("No valid variables selected or found in the data for plotting.")
-else:
-    st.error(f"The selected sheet '{plot_data_sheet}' was not found in your Excel file. Please select an existing sheet.")
+        st.error(f"The selected sheet '{plot_data_sheet}' was not found in your Excel file. Please select an existing sheet.")
 else:
     st.info("Select data frequency and variables from the dropdowns above to see their time series.")
