@@ -231,28 +231,32 @@ selected_variable = st.selectbox("Select Variable", available_variables)
 # --- Error Handling ---
 if not available_variables:
     st.error("No indicators available for the selected frequency.")
+else:
+    # --- User selects variable ---
+    selected_indicators = st.multiselect("Select Variables", available_variables)
 
-import matplotlib.pyplot as plt
-
-# --- Plot Selected Indicators ---
-if selected_indicators:
-    st.subheader("Indicator Trends Over Time")
+    # --- Plot ---
+    import matplotlib.pyplot as plt
+    plt.style.use('seaborn-v0_8-darkgrid')
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    for indicator in selected_indicators:
-        # Check if the indicator exists in the data
-        for sheet_name, df in data_dict.items():
-            if indicator in df.columns:
-                df_plot = df[['Date', indicator]].dropna()
-                ax.plot(df_plot['Date'], df_plot[indicator], label=indicator)
 
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Value')
-    ax.set_title('Time Series of Selected Indicators')
-    ax.legend()
-    ax.grid(True)
+    # Find the correct dataframe based on frequency
+    df = data_dict[selected_frequency]
 
-    st.pyplot(fig)
-else:
-    st.warning("No valid indicators selected for this frequency.")
+    # Check if the selected variable exists
+    if selected_variable in df.columns:
+        df_plot = df[['Date', selected_variable]].dropna()
+        ax.plot(df_plot['Date'], df_plot[selected_variable], label=selected_variable)
+
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Value')
+        ax.set_title(f'Time Series of {selected_variable} ({selected_frequency} Data)')
+        ax.legend()
+        ax.grid(True)
+
+        st.pyplot(fig)
+    else:
+        st.warning(f"{selected_variable} not found in the {selected_frequency} data.")
+
 
