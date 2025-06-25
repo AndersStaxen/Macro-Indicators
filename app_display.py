@@ -235,28 +235,37 @@ df = data_dict.get(selected_frequency)
 
 if df is not None and not df.empty:
     import matplotlib.pyplot as plt
-    plt.style.use('seaborn-v0_8-darkgrid')
+    import matplotlib.dates as mdates
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+plt.style.use('seaborn-v0_8-whitegrid')  # Modern, light grid style
 
-    found_any = False
-    for indicator in selected_indicators:
-        if indicator in df.columns:
-            df_plot = df[['Date', indicator]].dropna()
-            ax.plot(df_plot['Date'], df_plot[indicator], label=indicator)
-            found_any = True
-        else:
-            st.warning(f"'{indicator}' not found in {selected_frequency} data columns.")
+fig, ax = plt.subplots(figsize=(12, 6))
 
-    if found_any:
-        ax.set_xlabel('Date')
-        ax.set_ylabel('Value')
-        ax.set_title(f'Time Series of Selected Indicators ({selected_frequency} Data)')
-        ax.legend()
-        ax.grid(True)
-
-        st.pyplot(fig)
+found_any = False
+for indicator in selected_indicators:
+    if indicator in df.columns:
+        df_plot = df[['Date', indicator]].dropna()
+        ax.plot(df_plot['Date'], df_plot[indicator], label=indicator, linewidth=2.2)
+        found_any = True
     else:
-        st.warning("No valid indicators selected for plotting.")
+        st.warning(f"'{indicator}' not found in {selected_frequency} data columns.")
+
+if found_any:
+    ax.set_xlabel('Date', fontsize=12)
+    ax.set_ylabel('Value', fontsize=12)
+    ax.set_title(f'{selected_frequency.capitalize()} Indicators Over Time', fontsize=14, fontweight='bold')
+    
+    # Format x-axis dates
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+    ax.tick_params(axis='x', rotation=45)
+    
+    ax.legend(title='Indicators', fontsize=10)
+    ax.grid(True, linestyle='--', alpha=0.5)
+
+    # Tight layout to avoid clipping
+    fig.tight_layout()
+
+    st.pyplot(fig)
 else:
-    st.error(f"No data loaded for {selected_frequency}. Check your data loading function or Excel sheets.")
+    st.warning("No indicators selected for plotting.")
