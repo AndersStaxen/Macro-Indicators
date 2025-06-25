@@ -266,7 +266,7 @@ if selected_plot_frequency in data_dict:
         df_plot['Date'] = pd.to_datetime(df_plot['Date'], errors='coerce')
         df_plot = df_plot.set_index('Date').sort_index()
     else:
-    st.error(f"'{plot_data_sheet}' sheet does not contain a 'Date' column. Cannot plot.")
+        st.error(f"'{plot_data_sheet}' sheet does not contain a 'Date' column. Cannot plot.")
         st.stop()
 
     # --- Debugging Tip 1: Print all actual columns in the DataFrame ---
