@@ -213,10 +213,8 @@ with st.expander("Click to see the full list of variables"):
 
 st.subheader("Interactive Time Series Visualizations")
 
-# NEW: Selectbox for choosing the data frequency for the plot
-# You can customize these options based on which sheets you want to allow for plotting.
-# It's good to include "All Data" as an option too, as it covers everything.
-plot_frequency_options = ["All Data", "Monthly", "Quarterly", "Daily", "Weekly"] # Order as desired
+# --- Selectbox for choosing the data frequency for the plot ---
+plot_frequency_options = ["All Data", "Daily", "Weekly", "Monthly", "Quarterly"]  # Order as desired
 
 # Filter to only include sheets that actually exist in your data_dict
 existing_plot_frequencies = [
@@ -225,19 +223,19 @@ existing_plot_frequencies = [
 
 if not existing_plot_frequencies:
     st.error("No data sheets available for time series visualization. Please ensure your Excel file is loaded correctly.")
-    st.stop() # Stop execution if no data is found for plotting
+    st.stop()  # Stop execution if no data is found for plotting
 
 # Set a default selection for the plot frequency
 default_plot_freq_index = 0
 if "Monthly" in existing_plot_frequencies:
     default_plot_freq_index = existing_plot_frequencies.index("Monthly")
-elif "All Data" in existing_plot_frequencies: # Fallback to All Data if Monthly isn't there
+elif "All Data" in existing_plot_frequencies:
     default_plot_freq_index = existing_plot_frequencies.index("All Data")
 
-
+# --- Exclude "All Data" from frequency options for plotting ---
 available_plot_frequencies = [freq for freq in existing_plot_frequencies if freq != 'All Data']
 
-
+# --- Frequency selection ---
 selected_plot_frequency = st.selectbox(
     "Select data frequency for visualization:",
     options=available_plot_frequencies,
@@ -245,22 +243,23 @@ selected_plot_frequency = st.selectbox(
     key="plot_freq_selector"
 )
 
+# --- Build available variable list for this frequency ---
 if selected_plot_frequency in indicators:
     available_plot_variables = list(indicators[selected_plot_frequency].keys()) + derived_indicators
 else:
-    available_plot_variables = derived_indicators  # Fallback if no indicators found for that frequency
+    available_plot_variables = derived_indicators  # Fallback (shouldn't normally happen)
 
-
+# --- Variable Multi-Select ---
 selected_plot_variables = st.multiselect(
     "Select variables to visualize",
     options=available_plot_variables,
-    default=[], # Keep it empty or add some relevant defaults
+    default=[],  # Empty default
     key="variable_selector"
 )
 
-if selected_plot_variables:
-    if plot_data_sheet in data_dict:
-        df_plot = data_dict[plot_data_sheet].copy()
+# --- Load DataFrame for selected frequency ---
+if selected_plot_frequency in data_dict:
+    df_plot = data_dict[selected_plot_frequency].copy()
 
         # Ensure 'Date' column is present and is a datetime object, then set as index
         if 'Date' in df_plot.columns:
