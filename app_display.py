@@ -265,7 +265,7 @@ if selected_plot_frequency in data_dict:
     plot_data_sheet = selected_plot_frequency
 
     # Safety check: Is the sheet present?
-    if plot_data_sheet not in xls.sheet_names:
+    if plot_data_sheet not in xlsx.sheet_names:
         st.error(f"The selected sheet '{plot_data_sheet}' was not found in your Excel file. Please select an existing sheet.")
         st.stop()
 
