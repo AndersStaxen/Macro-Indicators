@@ -39,7 +39,7 @@ st.markdown("""
 This dashboard presents 49 key U.S. macroeconomic indicators using data sourced from the Federal Reserve (FRED).
 Currently, the data displayed covers the period from January 1, 2017, to December 31, 2024; however, this time period can be customized when running the Python script locally.
 The project aims to centralize critical time-series data for economic analysis.
-Additionally, links to download the full dataset in Excel format and view more comprehensive ways of using Python to analyze the data are provided.
+Additionally, links to download the full dataset in Excel and view more comprehensive ways of using Python to analyze the data are provided.
 """)
 
 # --- Features List & Download Links (Merged and Improved) ---
@@ -61,6 +61,14 @@ def get_python_download_link(file_path):
         href = f'<a href="data:application/octet-stream;base64,{b64}" download="Data_Visualization.py">Download Python Analysis Script</a>'
         return href
 
+# --- Download Python Notebook Function ---
+def get_python_download_link(file_path):
+    with open(file_path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+        # Adjusted text for the link
+        href = f'<a href="data:application/octet-stream;base64,{b64}" download="Economic_Indicators.py">Download Entire Python Notebook Script</a>'
+        return href
+
 # Feature 1: Table View (already present, just adding bullet point)
 st.markdown("- 🧮 Table view of all available indicators") # Kept as is
 
@@ -77,6 +85,13 @@ with col1_python:
     st.markdown("- 🧰 Reusable Python analysis file")
 with col2_python:
     st.markdown(get_python_download_link('Data_Visualization.py'), unsafe_allow_html=True)
+
+# Feature 4: Entire Python Notebook
+col1_python, col2_python = st.columns([0.8, 0.2]) # Adjust ratios as needed
+with col1_python:
+    st.markdown("- 📑 Reusable Python Notebook")
+with col2_python:
+    st.markdown(get_python_download_link('Economic_Indicators.py'), unsafe_allow_html=True)
 
 st.markdown("---") # Separator
 
@@ -220,19 +235,21 @@ elif "All Data" in existing_plot_frequencies: # Fallback to All Data if Monthly 
     default_plot_freq_index = existing_plot_frequencies.index("All Data")
 
 
+available_plot_frequencies = [freq for freq in existing_plot_frequencies if freq != 'All Data']
+
+
 selected_plot_frequency = st.selectbox(
     "Select data frequency for visualization:",
-    options=existing_plot_frequencies,
+    options=available_plot_frequencies,
     index=default_plot_freq_index,
     key="plot_freq_selector"
 )
 
-# Assign the selected frequency to the sheet variable used in plotting
-plot_data_sheet = selected_plot_frequency
+if selected_plot_frequency in indicators:
+    available_plot_variables = list(indicators[selected_plot_frequency].keys()) + derived_indicators
+else:
+    available_plot_variables = derived_indicators  # Fallback if no indicators found for that frequency
 
-
-# Get a list of all variable names for selection
-available_plot_variables = list(indicators.keys()) + derived_indicators
 
 selected_plot_variables = st.multiselect(
     "Select variables to visualize",
